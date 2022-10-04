@@ -40,6 +40,14 @@ class Amendment(BaseModel):
             clause.index = i + 1
         return values
 
+    @validator("num")
+    def set_num(cls, v):
+        return v.strip()
+
+    @validator("name")
+    def set_name(cls, v):
+        return v.strip()
+
     def citation(self, prefix: str = "") -> str:
         roman_index = toRoman(self.index)
         if prefix:
@@ -99,6 +107,14 @@ class Section(BaseModel):
             clause.index = i + 1
         return values
 
+    @validator("num")
+    def set_num(cls, v):
+        return v.strip()
+
+    @validator("name")
+    def set_name(cls, v):
+        return v.strip()
+
     def citation(self, prefix: str = "") -> str:
         if prefix:
             return f"{prefix}, § {self.index}"
@@ -133,6 +149,14 @@ class Article(BaseModel):
     index: int = 0
     num: str
     name: str
+
+    @validator("num")
+    def set_num(cls, v):
+        return v.strip()
+
+    @validator("name")
+    def set_name(cls, v):
+        return v.strip()
 
     @validator("sections")
     def set_section_paths(cls, values):
