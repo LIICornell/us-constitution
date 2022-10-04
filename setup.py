@@ -6,8 +6,8 @@ with open(path.join(here, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 setup(
-    name="us-constitution",
-    version="0.2.0",
+    name="usconstitution",
+    version="0.2.1",
     description="Pydantic model of US Constitution",
     long_description=long_description,
     classifiers=[
