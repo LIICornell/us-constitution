@@ -26,7 +26,7 @@ def add_numbers_to_data(data: Dict) -> Dict:
 
 def load_from_json(prefix: str = "") -> Constitution:
     """Load the data from the JSON file."""
-    json_file = Path(__file__).parent.parent / "data" / "usconstitution.full.json"
+    json_file = Path(__file__).parent / "data" / "usconstitution.full.json"
     with open(json_file) as f:
         data = json.load(f)
     data = add_numbers_to_data(data)
