@@ -1,0 +1,5 @@
+[run]
+omit = *virtual*, *tests*, *venv*
+
+[report]
+show_missing = True
