@@ -21,6 +21,7 @@ class TestArticle:
                 {
                     "identifer": 2,
                     "num": "Section 1 ",
+                    "article_number": 1,
                     "type": "section",
                     "name": " The Legislature",
                     "clauses": [
@@ -29,6 +30,8 @@ class TestArticle:
                                 "All legislative Powers herein granted shall be vested in a Congress of the United States, which shall consist of a Senate and House of Representatives."
                             ],
                             "num": " ",
+                            "article_number": 1,
+                            "section_number": 1,
                             "type": "paragraph",
                             "name": " ",
                             "clauses": [],

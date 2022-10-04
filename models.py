@@ -34,12 +34,6 @@ class Amendment(BaseModel):
     num: str
     name: str
 
-    @validator("clauses")
-    def set_clause_paths(cls, values):
-        for i, clause in enumerate(values):
-            clause.index = i + 1
-        return values
-
     @validator("num")
     def set_num(cls, v):
         return v.strip()
@@ -97,6 +91,7 @@ class Preamble(BaseModel):
 
 class Section(BaseModel):
     clauses: List[Clause] = []
+    article_number: int
     index: int = 0
     num: str
     name: str
@@ -115,15 +110,15 @@ class Section(BaseModel):
     def set_name(cls, v):
         return v.strip()
 
-    def citation(self, prefix: str = "") -> str:
-        if prefix:
-            return f"{prefix}, § {self.index}"
-        return f"§ {self.index}"
+    def citation(self, prefix: str = "U.S. Const.") -> str:
+        roman_index = toRoman(self.article_number)
+        cite = f"art. {roman_index}, § {self.index}"
+        return f"{prefix} {cite}"
 
     def citations(self, prefix: str = "") -> Iterator[str]:
         yield self.citation(prefix)
         for clause in self.clauses:
-            yield clause.citation(self.citation(prefix))
+            yield clause.citation(prefix)
 
     def heading(self, prefix: str = "") -> str:
         if prefix:
@@ -133,7 +128,7 @@ class Section(BaseModel):
     def headings(self, prefix: str = "") -> Iterator[str]:
         yield self.heading(prefix)
         for clause in self.clauses:
-            yield clause.heading(self.heading(prefix))
+            yield clause.heading(prefix)
 
     def path(self, prefix: str) -> str:
         return f"{prefix}/section-{self.index}"
@@ -141,7 +136,7 @@ class Section(BaseModel):
     def paths(self, prefix: str = "") -> Iterator[str]:
         yield self.path(prefix)
         for clause in self.clauses:
-            yield clause.path(self.path(prefix))
+            yield clause.path(prefix)
 
 
 class Article(BaseModel):
@@ -173,7 +168,7 @@ class Article(BaseModel):
     def citations(self, prefix: str = "") -> Iterator[str]:
         yield self.citation(prefix)
         for section in self.sections:
-            yield from section.citations(self.citation(prefix))
+            yield from section.citations(prefix)
 
     def heading(self, prefix: str = "") -> str:
         if prefix:
@@ -183,7 +178,7 @@ class Article(BaseModel):
     def headings(self, prefix: str = "") -> Iterator[str]:
         yield self.heading(prefix)
         for section in self.sections:
-            yield from section.headings(self.heading(prefix))
+            yield from section.headings(prefix)
 
     def path(self, prefix: str) -> str:
         return f"{prefix}/article-{self.index}"
@@ -191,7 +186,7 @@ class Article(BaseModel):
     def paths(self, prefix: str = "") -> Iterator[str]:
         yield self.path(prefix)
         for section in self.sections:
-            yield from section.paths(self.path(prefix))
+            yield from section.paths(prefix)
 
 
 class Constitution(BaseModel):
@@ -201,18 +196,6 @@ class Constitution(BaseModel):
     amendments: List[Amendment]
     path_prefix: str = ""
     cite_prefix = "U.S. Const."
-
-    @validator("articles")
-    def set_article_paths(cls, values):
-        for i, article in enumerate(values):
-            article.index = i + 1
-        return values
-
-    @validator("amendments")
-    def set_amendment_paths(cls, values):
-        for i, amendment in enumerate(values):
-            amendment.index = i + 1
-        return values
 
     def citations(self) -> Iterator[str]:
         yield self.cite_prefix
