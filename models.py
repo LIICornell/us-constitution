@@ -54,7 +54,7 @@ class Amendment(BaseModel):
 
 
 class Preamble(BaseModel):
-    clauses: List[Clause] = []
+    content: str
 
     def path(self, prefix: str) -> str:
         return f"{prefix}/preamble"
