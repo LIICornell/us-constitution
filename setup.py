@@ -7,7 +7,7 @@ with open(path.join(here, "README.md"), encoding="utf-8") as f:
 
 setup(
     name="us-constitution",
-    version="0.1.0",
+    version="0.2.0",
     description="Pydantic model of US Constitution",
     long_description=long_description,
     classifiers=[
@@ -20,6 +20,7 @@ setup(
     ],
     install_requires=[
         "pydantic>=1.9.1",
+        "roman",
     ],
     extras_require={},
     url="https://github.com/LIICornell/us-constitution",
