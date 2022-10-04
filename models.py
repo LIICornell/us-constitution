@@ -1,6 +1,7 @@
 from typing import Iterator, List
 
 from pydantic import BaseModel, validator
+from roman import toRoman
 
 
 class Clause(BaseModel):
@@ -12,6 +13,11 @@ class Clause(BaseModel):
         if isinstance(v, List):
             return " ".join(v)
         return v
+
+    def citation(self, prefix: str = "") -> str:
+        if prefix:
+            return f"{prefix}, cl. {self.index}"
+        return f"cl. {self.index}"
 
     def heading(self, prefix: str = "") -> str:
         if prefix:
@@ -33,6 +39,17 @@ class Amendment(BaseModel):
         for i, clause in enumerate(values):
             clause.index = i + 1
         return values
+
+    def citation(self, prefix: str = "") -> str:
+        roman_index = toRoman(self.index)
+        if prefix:
+            return f"{prefix}, amend. {roman_index}"
+        return f"amend. {roman_index}"
+
+    def citations(self, prefix: str = "") -> Iterator[str]:
+        yield self.citation(prefix)
+        for clause in self.clauses:
+            yield clause.citation(self.citation(prefix))
 
     def heading(self, prefix: str = "") -> str:
         if prefix:
@@ -56,6 +73,11 @@ class Amendment(BaseModel):
 class Preamble(BaseModel):
     content: str
 
+    def citation(self, prefix: str = "") -> str:
+        if prefix:
+            return f"{prefix}, Preamble"
+        return "Preamble"
+
     def path(self, prefix: str) -> str:
         return f"{prefix}/preamble"
 
@@ -76,6 +98,16 @@ class Section(BaseModel):
         for i, clause in enumerate(values):
             clause.index = i + 1
         return values
+
+    def citation(self, prefix: str = "") -> str:
+        if prefix:
+            return f"{prefix}, § {self.index}"
+        return f"§ {self.index}"
+
+    def citations(self, prefix: str = "") -> Iterator[str]:
+        yield self.citation(prefix)
+        for clause in self.clauses:
+            yield clause.citation(self.citation(prefix))
 
     def heading(self, prefix: str = "") -> str:
         if prefix:
@@ -108,6 +140,17 @@ class Article(BaseModel):
             section.index = i + 1
         return values
 
+    def citation(self, prefix: str = "") -> str:
+        roman_index = toRoman(self.index)
+        if prefix:
+            return f"{prefix} art. {roman_index}"
+        return f"art. {roman_index}"
+
+    def citations(self, prefix: str = "") -> Iterator[str]:
+        yield self.citation(prefix)
+        for section in self.sections:
+            yield from section.citations(self.citation(prefix))
+
     def heading(self, prefix: str = "") -> str:
         if prefix:
             return f"{prefix}, Article {self.index}"
@@ -133,6 +176,7 @@ class Constitution(BaseModel):
     articles: List[Article]
     amendments: List[Amendment]
     path_prefix: str = ""
+    cite_prefix = "U.S. Const."
 
     @validator("articles")
     def set_article_paths(cls, values):
@@ -145,6 +189,14 @@ class Constitution(BaseModel):
         for i, amendment in enumerate(values):
             amendment.index = i + 1
         return values
+
+    def citations(self) -> Iterator[str]:
+        yield self.cite_prefix
+        yield self.preamble.citation(self.cite_prefix)
+        for article in self.articles:
+            yield from article.citations(self.cite_prefix)
+        for amendment in self.amendments:
+            yield from amendment.citations(self.cite_prefix)
 
     def headings(self) -> Iterator[str]:
         yield self.name
