@@ -7,14 +7,19 @@ class Clause(BaseModel):
     content: str
     index: int = 0
 
-    def path(self, prefix: str = "") -> str:
-        return f"{prefix}/clause-{self.index}"
-
     @validator("content", pre=True)
     def validate_content(cls, v):
         if isinstance(v, List):
             return " ".join(v)
         return v
+
+    def heading(self, prefix: str = "") -> str:
+        if prefix:
+            return f"{prefix}, Clause {self.index}"
+        return f"Clause {self.index}"
+
+    def path(self, prefix: str = "") -> str:
+        return f"{prefix}/clause-{self.index}"
 
 
 class Amendment(BaseModel):
@@ -28,6 +33,16 @@ class Amendment(BaseModel):
         for i, clause in enumerate(values):
             clause.index = i + 1
         return values
+
+    def heading(self, prefix: str = "") -> str:
+        if prefix:
+            return f"{prefix}, Amendment {self.index}"
+        return f"Amendment {self.index}"
+
+    def headings(self, prefix: str = "") -> Iterator[str]:
+        yield self.heading(prefix)
+        for clause in self.clauses:
+            yield clause.heading(self.heading(prefix))
 
     def path(self, prefix: str = ""):
         return f"{prefix}/amendment-{self.index}"
@@ -44,6 +59,11 @@ class Preamble(BaseModel):
     def path(self, prefix: str) -> str:
         return f"{prefix}/preamble"
 
+    def heading(self, prefix: str = "") -> str:
+        if prefix:
+            return f"{prefix}, Preamble"
+        return "Preamble"
+
 
 class Section(BaseModel):
     clauses: List[Clause] = []
@@ -56,6 +76,16 @@ class Section(BaseModel):
         for i, clause in enumerate(values):
             clause.index = i + 1
         return values
+
+    def heading(self, prefix: str = "") -> str:
+        if prefix:
+            return f"{prefix}, Section {self.index}"
+        return f"Section {self.index}"
+
+    def headings(self, prefix: str = "") -> Iterator[str]:
+        yield self.heading(prefix)
+        for clause in self.clauses:
+            yield clause.heading(self.heading(prefix))
 
     def path(self, prefix: str) -> str:
         return f"{prefix}/section-{self.index}"
@@ -77,6 +107,16 @@ class Article(BaseModel):
         for i, section in enumerate(values):
             section.index = i + 1
         return values
+
+    def heading(self, prefix: str = "") -> str:
+        if prefix:
+            return f"{prefix}, Article {self.index}"
+        return f"Article {self.index}"
+
+    def headings(self, prefix: str = "") -> Iterator[str]:
+        yield self.heading(prefix)
+        for section in self.sections:
+            yield from section.headings(self.heading(prefix))
 
     def path(self, prefix: str) -> str:
         return f"{prefix}/article-{self.index}"
@@ -105,6 +145,14 @@ class Constitution(BaseModel):
         for i, amendment in enumerate(values):
             amendment.index = i + 1
         return values
+
+    def headings(self) -> Iterator[str]:
+        yield self.name
+        yield self.preamble.heading(prefix=self.name)
+        for article in self.articles:
+            yield from article.headings(prefix=self.name)
+        for amendment in self.amendments:
+            yield from amendment.headings(prefix=self.name)
 
     def paths(self) -> Iterator[str]:
         yield self.path_prefix
