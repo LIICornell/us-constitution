@@ -41,3 +41,20 @@ class TestLoad:
         am8 = self.model.amendments[7]
         assert am8.name == "Cruel and Unusual Punishment"
         assert am8.num == "Amendment 8"
+
+    def test_load_loc_id_amdt(self):
+        am8 = self.model.amendments[7]
+        assert am8.loc_id == "Amdt8"
+        assert am8.clauses[0].loc_id == "Amdt8.1"
+
+    def test_load_loc_id_section(self):
+        am5 = self.model.articles[4].sections[0]
+        assert am5.loc_id == "ArtV.S1"
+
+    def test_load_loc_id_clause(self):
+        am5 = self.model.articles[0].sections[7].clauses[0]
+        assert am5.loc_id == "ArtI.S8.C1"
+
+    def test_load_section_content(self):
+        am5 = self.model.articles[4].sections[0]
+        assert am5.content.startswith("The Congress, whenever")

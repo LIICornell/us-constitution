@@ -16,6 +16,11 @@ class Clause(BaseModel):
             return " ".join(v)
         return v
 
+    @property
+    def loc_id(self) -> str:
+        """Identifier used by the Library of Congress."""
+        return f"Art{toRoman(self.article_number)}.S{self.section_number}.C{self.index}"
+
     def citation(self, prefix: str = "") -> str:
         sec_cite = f"art. {toRoman(self.article_number)}, § {self.section_number}"
         cite = f"{sec_cite}, cl. {self.index}"
@@ -47,6 +52,11 @@ class AmendClause(BaseModel):
             return " ".join(v)
         return v
 
+    @property
+    def loc_id(self) -> str:
+        """Identifier used by the Library of Congress."""
+        return f"Amdt{self.amendment_number}.{self.index}"
+
     def citation(self, prefix: str = "") -> str:
         cite = f"amend. {toRoman(self.amendment_number)}, cl. {self.index}"
         if prefix:
@@ -76,6 +86,11 @@ class Amendment(BaseModel):
     @validator("name")
     def set_name(cls, v):
         return v.strip()
+
+    @property
+    def loc_id(self) -> str:
+        """Identifier used by the Library of Congress."""
+        return f"Amdt{self.index}"
 
     def citation(self, prefix: str = "") -> str:
         roman_index = toRoman(self.index)
@@ -110,6 +125,11 @@ class Amendment(BaseModel):
 class Preamble(BaseModel):
     content: str
 
+    @property
+    def loc_id(self) -> str:
+        """Identifier used by the Library of Congress."""
+        return f"Pre"
+
     def citation(self, prefix: str = "") -> str:
         if prefix:
             return f"{prefix}, Preamble"
@@ -128,6 +148,7 @@ class Section(BaseModel):
     clauses: List[Clause] = []
     article_number: int
     index: int = 0
+    content: str = ""
     num: str
     name: str
 
@@ -137,6 +158,12 @@ class Section(BaseModel):
             clause.index = i + 1
         return values
 
+    @validator("content", pre=True)
+    def validate_content(cls, v):
+        if isinstance(v, List):
+            return " ".join(v)
+        return v
+
     @validator("num")
     def set_num(cls, v):
         return v.strip()
@@ -144,6 +171,11 @@ class Section(BaseModel):
     @validator("name")
     def set_name(cls, v):
         return v.strip()
+
+    @property
+    def loc_id(self) -> str:
+        """Identifier used by the Library of Congress."""
+        return f"Art{toRoman(self.article_number)}.S{self.index}"
 
     def citation(self, prefix: str = "") -> str:
         cite = f"art. {toRoman(self.article_number)}, § {self.index}"
@@ -195,6 +227,11 @@ class Article(BaseModel):
         for i, section in enumerate(values):
             section.index = i + 1
         return values
+
+    @property
+    def loc_id(self) -> str:
+        """Identifier used by the Library of Congress."""
+        return f"Art{toRoman(self.index)}"
 
     def citation(self, prefix: str = "") -> str:
         roman_index = toRoman(self.index)
