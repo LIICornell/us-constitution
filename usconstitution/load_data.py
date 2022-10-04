@@ -2,7 +2,8 @@ import json
 from pathlib import Path
 from typing import Dict
 
-from models import Constitution
+from usconstitution.models import Constitution
+
 
 def add_numbers_to_data(data: Dict) -> Dict:
     """Add numbers to the data."""
@@ -22,9 +23,10 @@ def add_numbers_to_data(data: Dict) -> Dict:
             clause["index"] = j + 1
     return data
 
+
 def load_from_json(prefix: str = "") -> Constitution:
     """Load the data from the JSON file."""
-    json_file = Path(__file__).parent / "data" / "usconstitution.full.json"
+    json_file = Path(__file__).parent.parent / "data" / "usconstitution.full.json"
     with open(json_file) as f:
         data = json.load(f)
     data = add_numbers_to_data(data)

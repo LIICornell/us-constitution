@@ -1,4 +1,4 @@
-from load_data import load_from_json
+from usconstitution.load_data import load_from_json
 
 
 class TestLoad:

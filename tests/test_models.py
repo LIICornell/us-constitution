@@ -1,4 +1,4 @@
-from models import Constitution, Amendment, Article, Preamble, Clause
+from usconstitution.models import Constitution, Amendment, Article, Preamble, Clause
 
 
 class TestClause:

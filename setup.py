@@ -24,4 +24,5 @@ setup(
     ],
     extras_require={},
     url="https://github.com/LIICornell/us-constitution",
+    packages=find_packages(),
 )
