@@ -3,10 +3,10 @@ from models import Constitution, Amendment, Article, Preamble, Clause
 
 class TestClause:
     def test_clause(self):
-        clause = Clause(content="test", index=1, path="/test")
+        clause = Clause(content="test", index=1, article_number=1, section_number=1)
         assert clause.content == "test"
         assert clause.index == 1
-        assert clause.path("/const") == "/const/clause-1"
+        assert clause.path("/const") == "/const/article-1/section-1/clause-1"
 
 
 class TestArticle:
@@ -42,6 +42,6 @@ class TestArticle:
         }
         article = Article(**article_json)
         assert (
-            article.sections[0].path(prefix="/constitution/article-1")
+            article.sections[0].path(prefix="/constitution")
             == "/constitution/article-1/section-1"
         )

@@ -6,6 +6,8 @@ from roman import toRoman
 
 class Clause(BaseModel):
     content: str
+    article_number: int
+    section_number: int
     index: int = 0
 
     @validator("content", pre=True)
@@ -15,17 +17,23 @@ class Clause(BaseModel):
         return v
 
     def citation(self, prefix: str = "") -> str:
+        sec_cite = f"art. {toRoman(self.article_number)}, § {self.section_number}"
+        cite = f"{sec_cite}, cl. {self.index}"
         if prefix:
-            return f"{prefix}, cl. {self.index}"
-        return f"cl. {self.index}"
+            return f"{prefix}, {cite}"
+        return cite
 
     def heading(self, prefix: str = "") -> str:
+        artnum = toRoman(self.article_number)
+        section_heading = f"Article {artnum}, Section {self.section_number}"
+        heading = f"{section_heading}, Clause {self.index}"
         if prefix:
-            return f"{prefix}, Clause {self.index}"
-        return f"Clause {self.index}"
+            return f"{prefix}, {heading}"
+        return heading
 
     def path(self, prefix: str = "") -> str:
-        return f"{prefix}/clause-{self.index}"
+        section_path = f"/article-{self.article_number}/section-{self.section_number}"
+        return f"{prefix}{section_path}/clause-{self.index}"
 
 
 class AmendClause(BaseModel):
@@ -52,7 +60,7 @@ class AmendClause(BaseModel):
         return heading
 
     def path(self, prefix: str = "") -> str:
-        return f"{prefix}/clause-{self.index}"
+        return f"{prefix}/amendment-{self.amendment_number}/clause-{self.index}"
 
 
 class Amendment(BaseModel):
@@ -96,7 +104,7 @@ class Amendment(BaseModel):
     def paths(self, prefix: str = "") -> Iterator[str]:
         yield self.path(prefix)
         for clause in self.clauses:
-            yield clause.path(self.path(prefix))
+            yield clause.path(prefix)
 
 
 class Preamble(BaseModel):
@@ -137,10 +145,11 @@ class Section(BaseModel):
     def set_name(cls, v):
         return v.strip()
 
-    def citation(self, prefix: str = "U.S. Const.") -> str:
-        roman_index = toRoman(self.article_number)
-        cite = f"art. {roman_index}, § {self.index}"
-        return f"{prefix} {cite}"
+    def citation(self, prefix: str = "") -> str:
+        cite = f"art. {toRoman(self.article_number)}, § {self.index}"
+        if prefix:
+            return f"{prefix}, {cite}"
+        return cite
 
     def citations(self, prefix: str = "") -> Iterator[str]:
         yield self.citation(prefix)
@@ -148,9 +157,10 @@ class Section(BaseModel):
             yield clause.citation(prefix)
 
     def heading(self, prefix: str = "") -> str:
+        heading = f"Article {toRoman(self.article_number)}, Section {self.index}"
         if prefix:
-            return f"{prefix}, Section {self.index}"
-        return f"Section {self.index}"
+            return f"{prefix}, {heading}"
+        return heading
 
     def headings(self, prefix: str = "") -> Iterator[str]:
         yield self.heading(prefix)
@@ -158,7 +168,7 @@ class Section(BaseModel):
             yield clause.heading(prefix)
 
     def path(self, prefix: str) -> str:
-        return f"{prefix}/section-{self.index}"
+        return f"{prefix}/article-{self.article_number}/section-{self.index}"
 
     def paths(self, prefix: str = "") -> Iterator[str]:
         yield self.path(prefix)
