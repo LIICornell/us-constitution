@@ -21,6 +21,10 @@ class Clause(BaseModel):
         """Identifier used by the Library of Congress."""
         return f"Art{toRoman(self.article_number)}.S{self.section_number}.C{self.index}"
 
+    @property
+    def slug(self) -> str:
+        return f"clause-{self.index}"
+
     def citation(self, prefix: str = "") -> str:
         sec_cite = f"art. {toRoman(self.article_number)}, § {self.section_number}"
         cite = f"{sec_cite}, cl. {self.index}"
@@ -38,7 +42,7 @@ class Clause(BaseModel):
 
     def path(self, prefix: str = "") -> str:
         section_path = f"/article-{self.article_number}/section-{self.section_number}"
-        return f"{prefix}{section_path}/clause-{self.index}"
+        return f"{prefix}{section_path}/{self.slug}"
 
 
 class AmendClause(BaseModel):
@@ -57,6 +61,10 @@ class AmendClause(BaseModel):
         """Identifier used by the Library of Congress."""
         return f"Amdt{self.amendment_number}.{self.index}"
 
+    @property
+    def slug(self) -> str:
+        return f"clause-{self.index}"
+
     def citation(self, prefix: str = "") -> str:
         cite = f"amend. {toRoman(self.amendment_number)}, cl. {self.index}"
         if prefix:
@@ -70,7 +78,7 @@ class AmendClause(BaseModel):
         return heading
 
     def path(self, prefix: str = "") -> str:
-        return f"{prefix}/amendment-{self.amendment_number}/clause-{self.index}"
+        return f"{prefix}/amendment-{self.amendment_number}/{self.slug}"
 
 
 class Amendment(BaseModel):
@@ -92,6 +100,10 @@ class Amendment(BaseModel):
         """Identifier used by the Library of Congress."""
         return f"Amdt{self.index}"
 
+    @property
+    def slug(self) -> str:
+        return f"amendment-{self.index}"
+
     def citation(self, prefix: str = "") -> str:
         roman_index = toRoman(self.index)
         if prefix:
@@ -112,7 +124,7 @@ class Amendment(BaseModel):
             yield clause.heading(prefix)
 
     def path(self, prefix: str = ""):
-        return f"{prefix}/amendment-{self.index}"
+        return f"{prefix}/{self.slug}"
 
     def paths(self, prefix: str = "") -> Iterator[str]:
         for clause in self.tree():
@@ -131,6 +143,10 @@ class Preamble(BaseModel):
     def loc_id(self) -> str:
         """Identifier used by the Library of Congress."""
         return f"Pre"
+
+    @property
+    def slug(self) -> str:
+        return "preamble"
 
     def citation(self, prefix: str = "") -> str:
         if prefix:
@@ -179,6 +195,10 @@ class Section(BaseModel):
         """Identifier used by the Library of Congress."""
         return f"Art{toRoman(self.article_number)}.S{self.index}"
 
+    @property
+    def slug(self) -> str:
+        return f"section-{self.index}"
+
     def citation(self, prefix: str = "") -> str:
         cite = f"art. {toRoman(self.article_number)}, § {self.index}"
         if prefix:
@@ -200,7 +220,7 @@ class Section(BaseModel):
             yield clause.heading(prefix)
 
     def path(self, prefix: str) -> str:
-        return f"{prefix}/article-{self.article_number}/section-{self.index}"
+        return f"{prefix}/article-{self.article_number}/{self.slug}"
 
     def paths(self, prefix: str = "") -> Iterator[str]:
         for clause in self.tree():
@@ -237,6 +257,10 @@ class Article(BaseModel):
         """Identifier used by the Library of Congress."""
         return f"Art{toRoman(self.index)}"
 
+    @property
+    def slug(self) -> str:
+        return f"article-{self.index}"
+
     def citation(self, prefix: str = "") -> str:
         roman_index = toRoman(self.index)
         if prefix:
@@ -257,7 +281,7 @@ class Article(BaseModel):
             yield from section.heading(prefix)
 
     def path(self, prefix: str) -> str:
-        return f"{prefix}/article-{self.index}"
+        return f"{prefix}/{self.slug}"
 
     def paths(self, prefix: str = "") -> Iterator[str]:
         for section in self.tree():
