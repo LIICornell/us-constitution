@@ -99,8 +99,7 @@ class Amendment(BaseModel):
         return f"amend. {roman_index}"
 
     def citations(self, prefix: str = "") -> Iterator[str]:
-        yield self.citation(prefix)
-        for clause in self.clauses:
+        for clause in self.tree():
             yield clause.citation(prefix)
 
     def heading(self, prefix: str = "") -> str:
@@ -109,16 +108,14 @@ class Amendment(BaseModel):
         return f"Amendment {self.index}"
 
     def headings(self, prefix: str = "") -> Iterator[str]:
-        yield self.heading(prefix)
-        for clause in self.clauses:
+        for clause in self.tree():
             yield clause.heading(prefix)
 
     def path(self, prefix: str = ""):
         return f"{prefix}/amendment-{self.index}"
 
     def paths(self, prefix: str = "") -> Iterator[str]:
-        yield self.path(prefix)
-        for clause in self.clauses:
+        for clause in self.tree():
             yield clause.path(prefix)
 
     def tree(self) -> Iterator[BaseModel]:
@@ -189,8 +186,7 @@ class Section(BaseModel):
         return cite
 
     def citations(self, prefix: str = "") -> Iterator[str]:
-        yield self.citation(prefix)
-        for clause in self.clauses:
+        for clause in self.tree():
             yield clause.citation(prefix)
 
     def heading(self, prefix: str = "") -> str:
@@ -200,16 +196,14 @@ class Section(BaseModel):
         return heading
 
     def headings(self, prefix: str = "") -> Iterator[str]:
-        yield self.heading(prefix)
-        for clause in self.clauses:
+        for clause in self.tree():
             yield clause.heading(prefix)
 
     def path(self, prefix: str) -> str:
         return f"{prefix}/article-{self.article_number}/section-{self.index}"
 
     def paths(self, prefix: str = "") -> Iterator[str]:
-        yield self.path(prefix)
-        for clause in self.clauses:
+        for clause in self.tree():
             yield clause.path(prefix)
 
     def tree(self) -> Iterator[BaseModel]:
@@ -250,9 +244,8 @@ class Article(BaseModel):
         return f"art. {roman_index}"
 
     def citations(self, prefix: str = "") -> Iterator[str]:
-        yield self.citation(prefix)
-        for section in self.sections:
-            yield from section.citations(prefix)
+        for section in self.tree():
+            yield section.citation(prefix)
 
     def heading(self, prefix: str = "") -> str:
         if prefix:
@@ -260,17 +253,15 @@ class Article(BaseModel):
         return f"Article {self.index}"
 
     def headings(self, prefix: str = "") -> Iterator[str]:
-        yield self.heading(prefix)
-        for section in self.sections:
-            yield from section.headings(prefix)
+        for section in self.tree():
+            yield from section.heading(prefix)
 
     def path(self, prefix: str) -> str:
         return f"{prefix}/article-{self.index}"
 
     def paths(self, prefix: str = "") -> Iterator[str]:
-        yield self.path(prefix)
-        for section in self.sections:
-            yield from section.paths(prefix)
+        for section in self.tree():
+            yield section.path(prefix)
 
     def tree(self) -> Iterator[BaseModel]:
         yield self
