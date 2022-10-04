@@ -121,6 +121,11 @@ class Amendment(BaseModel):
         for clause in self.clauses:
             yield clause.path(prefix)
 
+    def tree(self) -> Iterator[BaseModel]:
+        yield self
+        for clause in self.clauses:
+            yield clause
+
 
 class Preamble(BaseModel):
     content: str
@@ -207,6 +212,11 @@ class Section(BaseModel):
         for clause in self.clauses:
             yield clause.path(prefix)
 
+    def tree(self) -> Iterator[BaseModel]:
+        yield self
+        for clause in self.clauses:
+            yield clause
+
 
 class Article(BaseModel):
     sections: List[Section] = []
@@ -262,6 +272,11 @@ class Article(BaseModel):
         for section in self.sections:
             yield from section.paths(prefix)
 
+    def tree(self) -> Iterator[BaseModel]:
+        yield self
+        for section in self.sections:
+            yield from section.tree()
+
 
 class Constitution(BaseModel):
     name: str
@@ -269,28 +284,32 @@ class Constitution(BaseModel):
     articles: List[Article]
     amendments: List[Amendment]
     path_prefix: str = ""
-    cite_prefix = "U.S. Const."
 
-    def citations(self) -> Iterator[str]:
-        yield self.cite_prefix
-        yield self.preamble.citation(self.cite_prefix)
+    def tree(self) -> Iterator[BaseModel]:
+        yield self
+        yield self.preamble
         for article in self.articles:
-            yield from article.citations(self.cite_prefix)
+            yield from article.tree()
         for amendment in self.amendments:
-            yield from amendment.citations(self.cite_prefix)
+            yield from amendment.tree()
 
-    def headings(self) -> Iterator[str]:
-        yield self.name
-        yield self.preamble.heading(prefix=self.name)
-        for article in self.articles:
-            yield from article.headings(prefix=self.name)
-        for amendment in self.amendments:
-            yield from amendment.headings(prefix=self.name)
+    def citation(self, prefix: str = "U.S. Const.") -> str:
+        return prefix
 
-    def paths(self) -> Iterator[str]:
-        yield self.path_prefix
-        yield self.preamble.path(self.path_prefix)
-        for article in self.articles:
-            yield from article.paths(self.path_prefix)
-        for amendment in self.amendments:
-            yield from amendment.paths(self.path_prefix)
+    def citations(self, prefix: str = "U.S. Const.") -> Iterator[str]:
+        for leaf in self.tree():
+            yield leaf.citation(prefix)
+
+    def heading(self, prefix: str = "US Constitution") -> str:
+        return prefix
+
+    def headings(self, prefix: str = "US Constitution") -> Iterator[str]:
+        for leaf in self.tree():
+            yield leaf.heading(prefix=prefix)
+
+    def path(self, prefix: str = "/constitution-conan") -> str:
+        return prefix
+
+    def paths(self, prefix: str = "/constitution-conan") -> Iterator[str]:
+        for leaf in self.tree():
+            yield leaf.path(prefix=prefix)
