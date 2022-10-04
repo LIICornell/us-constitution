@@ -26,6 +26,17 @@ class TestLoad:
         am5 = list(self.model.amendments[4].citations())[-1]
         assert am5 == "amend. V, cl. 4"
 
+    def test_amendment_cite(self):
+        am5 = self.model.amendments[4].clauses[0]
+        assert am5.citation() == "amend. V, cl. 1"
+
+    def test_amendment_heading(self):
+        am8 = self.model.amendments[7]
+        assert am8.heading() == "Amendment 8"
+        assert am8.heading(prefix="US Constitution") == "US Constitution, Amendment 8"
+        am5 = self.model.amendments[4].clauses[0]
+        assert am5.heading() == "Amendment 5, Clause 1"
+
     def test_load_name(self):
         am8 = self.model.amendments[7]
         assert am8.name == "Cruel and Unusual Punishment"

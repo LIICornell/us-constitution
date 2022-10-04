@@ -28,8 +28,35 @@ class Clause(BaseModel):
         return f"{prefix}/clause-{self.index}"
 
 
+class AmendClause(BaseModel):
+    content: str
+    amendment_number: int
+    index: int = 0
+
+    @validator("content", pre=True)
+    def validate_content(cls, v):
+        if isinstance(v, List):
+            return " ".join(v)
+        return v
+
+    def citation(self, prefix: str = "") -> str:
+        cite = f"amend. {toRoman(self.amendment_number)}, cl. {self.index}"
+        if prefix:
+            return f"{prefix}, {cite}"
+        return cite
+
+    def heading(self, prefix: str = "") -> str:
+        heading = f"Amendment {self.amendment_number}, Clause {self.index}"
+        if prefix:
+            return f"{prefix}, {heading}"
+        return heading
+
+    def path(self, prefix: str = "") -> str:
+        return f"{prefix}/clause-{self.index}"
+
+
 class Amendment(BaseModel):
-    clauses: List[Clause] = []
+    clauses: List[AmendClause] = []
     index: int = 0
     num: str
     name: str
@@ -51,7 +78,7 @@ class Amendment(BaseModel):
     def citations(self, prefix: str = "") -> Iterator[str]:
         yield self.citation(prefix)
         for clause in self.clauses:
-            yield clause.citation(self.citation(prefix))
+            yield clause.citation(prefix)
 
     def heading(self, prefix: str = "") -> str:
         if prefix:
@@ -61,7 +88,7 @@ class Amendment(BaseModel):
     def headings(self, prefix: str = "") -> Iterator[str]:
         yield self.heading(prefix)
         for clause in self.clauses:
-            yield clause.heading(self.heading(prefix))
+            yield clause.heading(prefix)
 
     def path(self, prefix: str = ""):
         return f"{prefix}/amendment-{self.index}"
