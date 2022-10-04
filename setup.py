@@ -25,4 +25,6 @@ setup(
     extras_require={},
     url="https://github.com/LIICornell/us-constitution",
     packages=find_packages(),
+    package_data={"usconstitution": ["data/*.json"]},
+    include_package_data=True,
 )
