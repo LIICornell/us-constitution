@@ -8,6 +8,10 @@ class TestClause:
         assert clause.index == 1
         assert clause.path("/const") == "/const/article-1/section-1/clause-1"
 
+    def test_cleanpath(self):
+        clause = Clause(content="test", index=1, article_number=1, section_number=1)
+        assert clause.cleanpath == "/constitution-conan/article-1/section-1/clause-1"
+
 
 class TestArticle:
     def test_load_article(self):

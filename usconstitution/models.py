@@ -3,8 +3,15 @@ from typing import Iterator, List
 from pydantic import BaseModel, validator
 from roman import toRoman
 
+class Provision(BaseModel):
+    @property
+    def cleanpath(self) -> str:
+        return self.path(prefix="/constitution-conan")
 
-class Clause(BaseModel):
+    def path(self, prefix: str = "") -> str:
+        raise NotImplementedError
+
+class Clause(Provision):
     content: str
     article_number: int
     section_number: int
@@ -45,7 +52,7 @@ class Clause(BaseModel):
         return f"{prefix}{section_path}/{self.slug}"
 
 
-class AmendClause(BaseModel):
+class AmendClause(Provision):
     content: str
     amendment_number: int
     index: int = 0
@@ -81,7 +88,7 @@ class AmendClause(BaseModel):
         return f"{prefix}/amendment-{self.amendment_number}/{self.slug}"
 
 
-class Amendment(BaseModel):
+class Amendment(Provision):
     clauses: List[AmendClause] = []
     index: int = 0
     num: str
@@ -136,7 +143,7 @@ class Amendment(BaseModel):
             yield clause
 
 
-class Preamble(BaseModel):
+class Preamble(Provision):
     content: str
 
     @property
@@ -162,7 +169,7 @@ class Preamble(BaseModel):
         return "Preamble"
 
 
-class Section(BaseModel):
+class Section(Provision):
     clauses: List[Clause] = []
     article_number: int
     index: int = 0
@@ -232,7 +239,7 @@ class Section(BaseModel):
             yield clause
 
 
-class Article(BaseModel):
+class Article(Provision):
     sections: List[Section] = []
     index: int = 0
     num: str
@@ -293,7 +300,7 @@ class Article(BaseModel):
             yield from section.tree()
 
 
-class Constitution(BaseModel):
+class Constitution(Provision):
     name: str
     preamble: Preamble
     articles: List[Article]
