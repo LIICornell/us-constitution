@@ -3,13 +3,27 @@ from typing import Iterator, List
 from pydantic import BaseModel, validator
 from roman import toRoman
 
+
 class Provision(BaseModel):
+    @validator("num", check_fields=False)
+    def whitespace_num(cls, v):
+        return v.strip()
+
+    @validator("name", check_fields=False)
+    def whitespace_name(cls, v):
+        return v.strip()
+
+    @validator("content", check_fields=False)
+    def whitespace_content(cls, v):
+        return v.strip()
+
     @property
     def cleanpath(self) -> str:
         return self.path(prefix="/constitution-conan")
 
     def path(self, prefix: str = "") -> str:
         raise NotImplementedError
+
 
 class Clause(Provision):
     content: str
@@ -93,14 +107,6 @@ class Amendment(Provision):
     index: int = 0
     num: str
     name: str
-
-    @validator("num")
-    def set_num(cls, v):
-        return v.strip()
-
-    @validator("name")
-    def set_name(cls, v):
-        return v.strip()
 
     @property
     def loc_id(self) -> str:
@@ -189,13 +195,12 @@ class Section(Provision):
             return " ".join(v)
         return v
 
-    @validator("num")
-    def set_num(cls, v):
-        return v.strip()
-
-    @validator("name")
-    def set_name(cls, v):
-        return v.strip()
+    @property
+    def fulltext(self) -> str:
+        clause_text = " ".join([c.content.strip() for c in self.clauses])
+        if self.content:
+            return f"{self.content.strip()} {clause_text}".strip()
+        return clause_text.strip()
 
     @property
     def loc_id(self) -> str:
@@ -244,14 +249,6 @@ class Article(Provision):
     index: int = 0
     num: str
     name: str
-
-    @validator("num")
-    def set_num(cls, v):
-        return v.strip()
-
-    @validator("name")
-    def set_name(cls, v):
-        return v.strip()
 
     @validator("sections")
     def set_section_paths(cls, values):

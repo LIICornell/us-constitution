@@ -56,5 +56,10 @@ class TestLoad:
         assert am5.loc_id == "ArtI.S8.C1"
 
     def test_load_section_content(self):
-        am5 = self.model.articles[4].sections[0]
-        assert am5.content.startswith("The Congress, whenever")
+        art5 = self.model.articles[4].sections[0]
+        assert art5.content.startswith("The Congress, whenever")
+
+    def test_load_section_fulltext(self):
+        art6 = self.model.articles[5].sections[0]
+        assert art6.fulltext.startswith("All Debts")
+        assert art6.fulltext.endswith("the Confederation.")
