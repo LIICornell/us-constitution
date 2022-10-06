@@ -1,10 +1,13 @@
-from typing import Iterator, List
+from typing import Iterator, List, Tuple
 
 from pydantic import BaseModel, validator
-from roman import toRoman
+from roman import toRoman, fromRoman
 
 
 class Provision(BaseModel):
+    num: str = ""
+    name: str = ""
+
     @validator("num", check_fields=False)
     def whitespace_num(cls, v):
         return v.strip()
@@ -26,7 +29,7 @@ class Provision(BaseModel):
 
 
 class Clause(Provision):
-    content: str
+    content: str = ""
     article_number: int
     section_number: int
     index: int = 0
@@ -67,7 +70,7 @@ class Clause(Provision):
 
 
 class AmendClause(Provision):
-    content: str
+    content: str = ""
     amendment_number: int
     index: int = 0
 
@@ -105,8 +108,6 @@ class AmendClause(Provision):
 class Amendment(Provision):
     clauses: List[AmendClause] = []
     index: int = 0
-    num: str
-    name: str
 
     @property
     def loc_id(self) -> str:
@@ -150,7 +151,7 @@ class Amendment(Provision):
 
 
 class Preamble(Provision):
-    content: str
+    content: str = ""
 
     @property
     def loc_id(self) -> str:
@@ -180,8 +181,6 @@ class Section(Provision):
     article_number: int
     index: int = 0
     content: str = ""
-    num: str
-    name: str
 
     @validator("clauses")
     def set_clause_paths(cls, values):
@@ -247,8 +246,6 @@ class Section(Provision):
 class Article(Provision):
     sections: List[Section] = []
     index: int = 0
-    num: str
-    name: str
 
     @validator("sections")
     def set_section_paths(cls, values):
@@ -332,3 +329,30 @@ class Constitution(Provision):
     def paths(self, prefix: str = "/constitution-conan") -> Iterator[str]:
         for leaf in self.tree():
             yield leaf.path(prefix=prefix)
+
+
+def from_loc_id(link_text: str) -> Tuple[Provision, str]:
+    """Parse link text into a provision and an essay path."""
+    if link_text.startswith("Pre"):
+        return Preamble(), link_text[4:]
+    if link_text.startswith("Art"):
+        art_num = fromRoman(link_text[3 : link_text.find(".")])
+        if ".S" in link_text:
+            section_num = int(link_text.split(".S")[1][0])
+            if ".C" in link_text:
+                clause_num = int(link_text.split(".C")[1][0])
+                return (
+                    Clause(
+                        article_number=art_num,
+                        section_number=section_num,
+                        index=clause_num,
+                    ),
+                    link_text[link_text.find(".C") + 4 :],
+                )
+            section = Section(article_number=art_num, index=section_num)
+            return section, link_text.split(".", maxsplit=2)[2]
+        return Article(index=art_num), link_text.split(".", maxsplit=1)[1]
+    if link_text.startswith("Amdt"):
+        amendment = Amendment(index=int(link_text[4 : link_text.find(".")]))
+        return amendment, link_text.split(".", maxsplit=1)[1]
+    raise ValueError(f"Could not parse link text: {link_text}")
