@@ -45,7 +45,7 @@ class TestLoad:
     def test_load_loc_id_amdt(self):
         am8 = self.model.amendments[7]
         assert am8.loc_id == "Amdt8"
-        assert am8.clauses[0].loc_id == "Amdt8.1"
+        assert "cruel and unusual" in am8.content.lower()
 
     def test_load_loc_id_section(self):
         am5 = self.model.articles[4].sections[0]
