@@ -5,23 +5,43 @@ from typing import Dict
 from usconstitution.models import Constitution
 
 
+def add_numbers_to_provision(provision: Dict, index: int) -> Dict:
+    if provision.get("sections"):
+        for j, section in enumerate(provision["sections"]):
+            section["article_number"] = index
+            section["index"] = j + 1
+            if section.get("clauses"):
+                for k, subsection in enumerate(section["clauses"]):
+                    subsection["article_number"] = index
+                    subsection["section_number"] = j + 1
+                    subsection["index"] = k + 1
+    if provision.get("clauses"):
+        for j, clause in enumerate(provision["clauses"]):
+            clause["article_number"] = index
+            clause["index"] = j + 1
+    return provision
+
+
 def add_numbers_to_data(data: Dict) -> Dict:
     """Add numbers to the data."""
     for i, article in enumerate(data["articles"]):
         article["index"] = i + 1
-        for j, section in enumerate(article["sections"]):
-            section["article_number"] = i + 1
-            section["index"] = j + 1
-            for k, subsection in enumerate(section["clauses"]):
-                subsection["article_number"] = i + 1
-                subsection["section_number"] = j + 1
-                subsection["index"] = k + 1
+        add_numbers_to_provision(article, i + 1)
     for i, amendment in enumerate(data["amendments"]):
         amendment["index"] = i + 1
-        for j, clause in enumerate(amendment["clauses"]):
-            clause["amendment_number"] = i + 1
-            clause["index"] = j + 1
+        add_numbers_to_provision(amendment, i + 1)
     return data
+
+
+def flatten_content_in_clauses(amendment: Dict) -> Dict:
+    if amendment.get("clauses"):
+        amendment["content"] = " ".join(
+            clause["content"][0] for clause in amendment.pop("clauses")
+        )
+    if amendment.get("sections"):
+        for section in amendment["sections"]:
+            section = flatten_content_in_clauses(section)
+    return amendment
 
 
 def load_from_json(prefix: str = "") -> Constitution:
@@ -32,4 +52,7 @@ def load_from_json(prefix: str = "") -> Constitution:
     data = add_numbers_to_data(data)
     if prefix:
         data["path_prefix"] = prefix
+    data["amendments"] = [
+        flatten_content_in_clauses(amendment) for amendment in data["amendments"]
+    ]
     return Constitution(**data)
