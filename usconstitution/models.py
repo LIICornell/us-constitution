@@ -1,4 +1,4 @@
-from typing import Iterator, List, Tuple
+from typing import Iterator, List, Optional, Tuple
 
 from pydantic import BaseModel, validator
 from roman import toRoman, fromRoman
@@ -7,6 +7,8 @@ from roman import toRoman, fromRoman
 class Provision(BaseModel):
     num: str = ""
     name: str = ""
+    content: str = ""
+    index: int = 0
 
     @validator("num", check_fields=False)
     def whitespace_num(cls, v):
@@ -31,7 +33,7 @@ class Provision(BaseModel):
 class Clause(Provision):
     content: str = ""
     article_number: int
-    section_number: int
+    section_number: Optional[int] = None
     index: int = 0
 
     @validator("content", pre=True)
@@ -69,44 +71,45 @@ class Clause(Provision):
         return f"{prefix}{section_path}/{self.slug}"
 
 
-class AmendClause(Provision):
+class AmendSection(Provision):
     content: str = ""
-    amendment_number: int
+    article_number: int
     index: int = 0
-
-    @validator("content", pre=True)
-    def validate_content(cls, v):
-        if isinstance(v, List):
-            return " ".join(v)
-        return v
 
     @property
     def loc_id(self) -> str:
         """Identifier used by the Library of Congress."""
-        return f"Amdt{self.amendment_number}.{self.index}"
+        return f"Amdt{self.article_number}.S{self.index}"
 
     @property
     def slug(self) -> str:
-        return f"clause-{self.index}"
+        return f"section-{self.index}"
+
+    @validator("content", pre=True)
+    def validate_content(cls, v) -> str:
+        if isinstance(v, List):
+            return " ".join(v)
+        return v
 
     def citation(self, prefix: str = "") -> str:
-        cite = f"amend. {toRoman(self.amendment_number)}, cl. {self.index}"
+        cite = f"amend. {toRoman(self.article_number)}, sec. {self.index}"
         if prefix:
             return f"{prefix}, {cite}"
         return cite
 
     def heading(self, prefix: str = "") -> str:
-        heading = f"Amendment {self.amendment_number}, Clause {self.index}"
+        heading = f"Amendment {self.article_number}, Section {self.index}"
         if prefix:
             return f"{prefix}, {heading}"
         return heading
 
     def path(self, prefix: str = "") -> str:
-        return f"{prefix}/amendment-{self.amendment_number}/{self.slug}"
+        return f"{prefix}/amendment-{self.article_number}/{self.slug}"
 
 
 class Amendment(Provision):
-    clauses: List[AmendClause] = []
+    sections: List[AmendSection] = []
+    content: str = ""
     index: int = 0
 
     @property
@@ -144,9 +147,9 @@ class Amendment(Provision):
         for clause in self.tree():
             yield clause.path(prefix)
 
-    def tree(self) -> Iterator[BaseModel]:
+    def tree(self) -> Iterator[Provision]:
         yield self
-        for clause in self.clauses:
+        for clause in self.sections:
             yield clause
 
 
@@ -246,6 +249,7 @@ class Section(Provision):
 class Article(Provision):
     sections: List[Section] = []
     index: int = 0
+    clauses: List[Clause] = []
 
     @validator("sections")
     def set_section_paths(cls, values):
