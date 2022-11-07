@@ -4,11 +4,24 @@ from pydantic import BaseModel, validator
 from roman import toRoman, fromRoman
 
 
+class EssayLink(BaseModel):
+    """Link to an essay in the US Constitution Annotated."""
+
+    cleanpath: str
+    title: str
+    loc_id: str
+    idnums: str = ""
+    extid: str = ""
+    govlink: Optional[str] = None
+    children: List["EssayLink"]
+
+
 class Provision(BaseModel):
     num: str = ""
     name: str = ""
     content: str = ""
     index: int = 0
+    essay_links: List[EssayLink] = []
 
     @validator("num", check_fields=False)
     def whitespace_num(cls, v):
