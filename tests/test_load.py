@@ -27,8 +27,8 @@ class TestLoad:
         assert am5 == "amend. V"
 
     def test_amendment_cite(self):
-        am5 = self.model.amendments[14].sections[0]
-        assert am5.citation() == "amend. XV, sec. 1"
+        am15 = self.model.amendments[14].sections[0]
+        assert am15.citation() == "amend. XV, sec. 1"
 
     def test_amendment_heading(self):
         am8 = self.model.amendments[7]
@@ -63,3 +63,15 @@ class TestLoad:
         art6 = self.model.articles[3].sections[0]
         assert art6.fulltext.startswith("Full Faith and Credit")
         assert art6.fulltext.endswith("Effect thereof.")
+
+    def test_load_article_6_clause(self):
+        assert len(self.model.articles[5].sections) == 0
+        clause = self.model.articles[5].clauses[0]
+        assert clause.content.startswith("All Debts contracted")
+        assert clause.path() == "/article-6/clause-1"
+
+    def test_load_article_7_clause(self):
+        art7 = self.model.articles[6]
+        assert len(art7.sections) == 0
+        assert art7.content.startswith("The Ratification")
+        assert art7.path() == "/article-7"

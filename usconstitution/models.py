@@ -80,7 +80,9 @@ class Clause(Provision):
         return heading
 
     def path(self, prefix: str = "") -> str:
-        section_path = f"/article-{self.article_number}/section-{self.section_number}"
+        section_path = f"/article-{self.article_number}"
+        if self.section_number:
+            section_path += f"/section-{self.section_number}"
         return f"{prefix}{section_path}/{self.slug}"
 
 
@@ -298,7 +300,7 @@ class Article(Provision):
         for section in self.tree():
             yield from section.heading(prefix)
 
-    def path(self, prefix: str) -> str:
+    def path(self, prefix: str = "") -> str:
         return f"{prefix}/{self.slug}"
 
     def paths(self, prefix: str = "") -> Iterator[str]:
