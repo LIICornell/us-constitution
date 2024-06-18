@@ -1,6 +1,6 @@
 from typing import Iterator, List, Optional, Tuple
 
-from pydantic import BaseModel, validator
+from pydantic import field_validator, BaseModel
 from roman import fromRoman, toRoman
 
 
@@ -23,15 +23,18 @@ class Provision(BaseModel):
     index: int = 0
     essay_links: List[EssayLink] = []
 
-    @validator("num", check_fields=False)
+    @field_validator("num", check_fields=False)
+    @classmethod
     def whitespace_num(cls, v):
         return v.strip()
 
-    @validator("name", check_fields=False)
+    @field_validator("name", check_fields=False)
+    @classmethod
     def whitespace_name(cls, v):
         return v.strip()
 
-    @validator("content", check_fields=False)
+    @field_validator("content", check_fields=False)
+    @classmethod
     def whitespace_content(cls, v):
         return v.strip()
 
@@ -49,7 +52,8 @@ class Clause(Provision):
     section_number: Optional[int] = None
     index: int = 0
 
-    @validator("content", pre=True)
+    @field_validator("content", mode="before")
+    @classmethod
     def validate_content(cls, v):
         if isinstance(v, List):
             return " ".join(v)
@@ -100,7 +104,8 @@ class AmendSection(Provision):
     def slug(self) -> str:
         return f"section-{self.index}"
 
-    @validator("content", pre=True)
+    @field_validator("content", mode="before")
+    @classmethod
     def validate_content(cls, v) -> str:
         if isinstance(v, List):
             return " ".join(v)
@@ -200,13 +205,15 @@ class Section(Provision):
     index: int = 0
     content: str = ""
 
-    @validator("clauses")
+    @field_validator("clauses")
+    @classmethod
     def set_clause_paths(cls, clause_values):
         for i, clause in enumerate(clause_values):
             clause.index = i + 1
         return clause_values
 
-    @validator("content", pre=True)
+    @field_validator("content", mode="before")
+    @classmethod
     def validate_content(cls, v):
         if isinstance(v, List):
             return " ".join(v)
@@ -266,7 +273,8 @@ class Article(Provision):
     index: int = 0
     clauses: List[Clause] = []
 
-    @validator("sections")
+    @field_validator("sections")
+    @classmethod
     def set_section_paths(cls, section_values):
         for i, section in enumerate(section_values):
             section.index = i + 1
