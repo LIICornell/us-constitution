@@ -1,7 +1,7 @@
 from typing import Iterator, List, Optional, Tuple
 
 from pydantic import BaseModel, validator
-from roman import toRoman, fromRoman
+from roman import fromRoman, toRoman
 
 
 class EssayLink(BaseModel):
@@ -201,10 +201,10 @@ class Section(Provision):
     content: str = ""
 
     @validator("clauses")
-    def set_clause_paths(cls, values):
-        for i, clause in enumerate(values):
+    def set_clause_paths(cls, clause_values):
+        for i, clause in enumerate(clause_values):
             clause.index = i + 1
-        return values
+        return clause_values
 
     @validator("content", pre=True)
     def validate_content(cls, v):
@@ -267,10 +267,10 @@ class Article(Provision):
     clauses: List[Clause] = []
 
     @validator("sections")
-    def set_section_paths(cls, values):
-        for i, section in enumerate(values):
+    def set_section_paths(cls, section_values):
+        for i, section in enumerate(section_values):
             section.index = i + 1
-        return values
+        return section_values
 
     @property
     def loc_id(self) -> str:
