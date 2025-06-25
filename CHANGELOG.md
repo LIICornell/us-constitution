@@ -1,4 +1,7 @@
 # Changelog
+## 0.5.2 - 2025-06-24
+- require pydantic>=2.6.4
+
 ## 0.5.1 - 2025-06-24
 - parse 2-digit section and clause enums (LIICornell/factory-conan/issues/186)
 
