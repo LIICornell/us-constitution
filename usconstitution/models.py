@@ -1,6 +1,6 @@
 from typing import Iterator, List, Optional, Tuple
 
-from pydantic import field_validator, BaseModel
+from pydantic import BaseModel, field_validator
 from roman import fromRoman, toRoman
 
 
@@ -365,9 +365,9 @@ def from_loc_id(link_text: str) -> Tuple[Provision, str]:
     if link_text.startswith("Art"):
         art_num = fromRoman(link_text[3 : link_text.find(".")])
         if ".S" in link_text:
-            section_num = int(link_text.split(".S")[1][0])
+            section_num = int(link_text.split(".S")[1].split(".")[0])
             if ".C" in link_text:
-                clause_num = int(link_text.split(".C")[1][0])
+                clause_num = int(link_text.split(".C")[1].split(".")[0])
                 return (
                     Clause(
                         article_number=art_num,

@@ -1,7 +1,13 @@
 import pytest
 
-from usconstitution.models import Section, Amendment, Article, Preamble, Clause
-from usconstitution.models import from_loc_id
+from usconstitution.models import (
+    Amendment,
+    Article,
+    Clause,
+    Preamble,
+    Section,
+    from_loc_id,
+)
 
 
 class TestClause:
@@ -90,6 +96,19 @@ class TestSection:
         assert section.index == 2
         assert rest == "1"
         assert isinstance(section, Section)
+
+    def test_two_digit_section_from_loc_id(self):
+        provision, rest = from_loc_id("ArtI.S10.C1.2")
+        assert provision.index == 1
+        assert provision.section_number == 10
+        assert rest == "2"
+        assert isinstance(provision, Clause)
+
+    def test_two_digit_clause_from_loc_id(self):
+        clause, rest = from_loc_id("ArtI.S8.C10.1")
+        assert clause.index == 10
+        assert rest == ".1"
+        assert isinstance(clause, Clause)
 
     def test_cannot_parse(self):
         with pytest.raises(ValueError):
