@@ -1,4 +1,7 @@
 # Changelog
+## 0.6.2 - 2026-08-27
+- AmendSection has amendment_number field name
+
 ## 0.6.1 - 2026-08-27
 - add default factory for EssayLink.children
 - don't require cleanpath on EssayLink model
