@@ -7,7 +7,6 @@ from roman import fromRoman, toRoman
 class EssayLink(BaseModel):
     """Link to an essay in the US Constitution Annotated."""
 
-    cleanpath: str
     title: str
     loc_id: str
     idnums: str = ""
