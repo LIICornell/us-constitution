@@ -2,6 +2,7 @@ import pytest
 
 from usconstitution.models import (
     Amendment,
+    AmendSection,
     Article,
     Clause,
     Preamble,
@@ -80,6 +81,23 @@ class TestAmendment:
         assert amendment.index == 7
         assert rest == "1.1"
         assert isinstance(amendment, Amendment)
+
+    def test_make_amendment(self):
+        a25 = Amendment(
+            index=25,
+            name="Presidential Vacancy",
+        )
+        assert a25.citation() == "amend. XXV"
+        assert a25.path() == "/amendment-25"
+
+    def test_make_amendment_section(self):
+        a25 = AmendSection(
+            index=1,
+            amendment_number=25,
+            name="Presidential Vacancy",
+        )
+        assert a25.citation() == "amend. XXV, sec. 1"
+        assert a25.path() == "/amendment-25/section-1"
 
 
 class TestPreamble:

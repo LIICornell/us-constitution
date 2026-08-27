@@ -1,6 +1,6 @@
 from collections.abc import Iterator
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import AliasChoices, BaseModel, Field, field_validator
 from roman import fromRoman, toRoman
 
 
@@ -90,14 +90,16 @@ class Clause(Provision):
 
 
 class AmendSection(Provision):
+    index: int
     content: str = ""
-    article_number: int
-    index: int = 0
+    amendment_number: int = Field(
+        validation_alias=AliasChoices("amendment_number", "article_number")
+    )
 
     @property
     def loc_id(self) -> str:
         """Identifier used by the Library of Congress."""
-        return f"Amdt{self.article_number}.S{self.index}"
+        return f"Amdt{self.amendment_number}.S{self.index}"
 
     @property
     def slug(self) -> str:
@@ -111,19 +113,19 @@ class AmendSection(Provision):
         return v
 
     def citation(self, prefix: str = "") -> str:
-        cite = f"amend. {toRoman(self.article_number)}, sec. {self.index}"
+        cite = f"amend. {toRoman(self.amendment_number)}, sec. {self.index}"
         if prefix:
             return f"{prefix}, {cite}"
         return cite
 
     def heading(self, prefix: str = "") -> str:
-        heading = f"Amendment {self.article_number}, Section {self.index}"
+        heading = f"Amendment {self.amendment_number}, Section {self.index}"
         if prefix:
             return f"{prefix}, {heading}"
         return heading
 
     def path(self, prefix: str = "") -> str:
-        return f"{prefix}/amendment-{self.article_number}/{self.slug}"
+        return f"{prefix}/amendment-{self.amendment_number}/{self.slug}"
 
 
 class Amendment(Provision):
