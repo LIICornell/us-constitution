@@ -1,4 +1,9 @@
 # Changelog
+## 0.6.0 - 2026-08-27
+- add .python-version file with 3.14
+- use uv with GitHub Action workflows
+- use pyproject.toml instead of setup.py
+
 ## 0.5.2 - 2025-06-24
 - require pydantic>=2.6.4
 

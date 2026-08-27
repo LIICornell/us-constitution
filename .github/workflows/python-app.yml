@@ -1,33 +1,40 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
 name: Python application
 
 on:
   push:
-    branches: ["master", "develop"]
+    branches: ["master", "main", "devel"]
   pull_request:
-    branches: ["master", "develop"]
+    branches: ["master", "main", "devel"]
 
 permissions:
   contents: read
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        python-version: ["3.14"]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v5
+      - name: Install the latest version of uv and set the python version
+        uses: astral-sh/setup-uv@v7
         with:
-          persist-credentials: false
-      - name: Set up Python 3.13
-        uses: actions/setup-python@v3
-        with:
-          python-version: "3.13"
-      - name: Install dependencies
+          enable-cache: true
+          python-version: ${{ matrix.python-version }}
+
+      - name: Set github url and credentials
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install pytest pytest-recording
-          python -m pip install -r requirements.txt
-      - name: Test with pytest
-        env:
-          EXIST_DEV_URL: http://ec2-184-73-188-210.compute-1.amazonaws.com:8080/exist/rest
-        run: |
-          python -m pytest tests --record-mode=none
+          /usr/bin/git config --global --add url."https://${{ secrets.MACHINEUSER_ACTIONS_PAT }}:x-oauth-basic@github".insteadOf ssh://git@github
+          /usr/bin/git config --global --add url."https://${{ secrets.MACHINEUSER_ACTIONS_PAT }}:x-oauth-basic@github".insteadOf https://github
+          /usr/bin/git config --global --add url."https://${{ secrets.MACHINEUSER_ACTIONS_PAT }}:x-oauth-basic@github".insteadOf git@github
+          /usr/bin/git config --global --add url."https://${{ secrets.MACHINEUSER_ACTIONS_PAT }}:x-oauth-basic@github".insteadOf git+ssh@github
+
+      - name: Install the project
+        run: uv sync --locked --dev
+
+      - name: Test with python ${{ matrix.python-version }}
+        run: uv run --frozen python -m pytest
