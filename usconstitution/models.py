@@ -1,4 +1,4 @@
-from typing import Iterator, List, Optional, Tuple
+from collections.abc import Iterator
 
 from pydantic import BaseModel, field_validator
 from roman import fromRoman, toRoman
@@ -12,8 +12,8 @@ class EssayLink(BaseModel):
     loc_id: str
     idnums: str = ""
     extid: str = ""
-    govlink: Optional[str] = None
-    children: List["EssayLink"]
+    govlink: str | None = None
+    children: list["EssayLink"]
 
 
 class Provision(BaseModel):
@@ -21,7 +21,7 @@ class Provision(BaseModel):
     name: str = ""
     content: str = ""
     index: int = 0
-    essay_links: List[EssayLink] = []
+    essay_links: list[EssayLink] = []
 
     @field_validator("num", check_fields=False)
     @classmethod
@@ -49,13 +49,13 @@ class Provision(BaseModel):
 class Clause(Provision):
     content: str = ""
     article_number: int
-    section_number: Optional[int] = None
+    section_number: int | None = None
     index: int = 0
 
     @field_validator("content", mode="before")
     @classmethod
     def validate_content(cls, v):
-        if isinstance(v, List):
+        if isinstance(v, list):
             return " ".join(v)
         return v
 
@@ -107,7 +107,7 @@ class AmendSection(Provision):
     @field_validator("content", mode="before")
     @classmethod
     def validate_content(cls, v) -> str:
-        if isinstance(v, List):
+        if isinstance(v, list):
             return " ".join(v)
         return v
 
@@ -128,7 +128,7 @@ class AmendSection(Provision):
 
 
 class Amendment(Provision):
-    sections: List[AmendSection] = []
+    sections: list[AmendSection] = []
     content: str = ""
     index: int = 0
 
@@ -169,8 +169,7 @@ class Amendment(Provision):
 
     def tree(self) -> Iterator[Provision]:
         yield self
-        for clause in self.sections:
-            yield clause
+        yield from self.sections
 
 
 class Preamble(Provision):
@@ -179,7 +178,7 @@ class Preamble(Provision):
     @property
     def loc_id(self) -> str:
         """Identifier used by the Library of Congress."""
-        return f"Pre"
+        return "Pre"
 
     @property
     def slug(self) -> str:
@@ -200,7 +199,7 @@ class Preamble(Provision):
 
 
 class Section(Provision):
-    clauses: List[Clause] = []
+    clauses: list[Clause] = []
     article_number: int
     index: int = 0
     content: str = ""
@@ -215,7 +214,7 @@ class Section(Provision):
     @field_validator("content", mode="before")
     @classmethod
     def validate_content(cls, v):
-        if isinstance(v, List):
+        if isinstance(v, list):
             return " ".join(v)
         return v
 
@@ -264,14 +263,13 @@ class Section(Provision):
 
     def tree(self) -> Iterator[BaseModel]:
         yield self
-        for clause in self.clauses:
-            yield clause
+        yield from self.clauses
 
 
 class Article(Provision):
-    sections: List[Section] = []
+    sections: list[Section] = []
     index: int = 0
-    clauses: List[Clause] = []
+    clauses: list[Clause] = []
 
     @field_validator("sections")
     @classmethod
@@ -324,8 +322,8 @@ class Article(Provision):
 class Constitution(Provision):
     name: str
     preamble: Preamble
-    articles: List[Article]
-    amendments: List[Amendment]
+    articles: list[Article]
+    amendments: list[Amendment]
     path_prefix: str = ""
 
     def tree(self) -> Iterator[BaseModel]:
@@ -358,7 +356,7 @@ class Constitution(Provision):
             yield leaf.path(prefix=prefix)
 
 
-def from_loc_id(link_text: str) -> Tuple[Provision, str]:
+def from_loc_id(link_text: str) -> tuple[Provision, str]:
     """Parse link text into a provision and an essay path."""
     if link_text.startswith("Pre"):
         return Preamble(), link_text[4:]

@@ -112,4 +112,4 @@ class TestSection:
 
     def test_cannot_parse(self):
         with pytest.raises(ValueError):
-            section, rest = from_loc_id("AnnIII.X2.Y1")
+            from_loc_id("AnnIII.X2.Y1")

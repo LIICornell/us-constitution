@@ -1,11 +1,10 @@
 import json
 from pathlib import Path
-from typing import Dict
 
 from usconstitution.models import Constitution
 
 
-def add_numbers_to_provision(provision: Dict, index: int) -> Dict:
+def add_numbers_to_provision(provision: dict, index: int) -> dict:
     if provision.get("sections"):
         for j, section in enumerate(provision["sections"]):
             section["article_number"] = index
@@ -22,7 +21,7 @@ def add_numbers_to_provision(provision: Dict, index: int) -> Dict:
     return provision
 
 
-def add_numbers_to_data(data: Dict) -> Dict:
+def add_numbers_to_data(data: dict) -> dict:
     """Add numbers to the data."""
     for i, article in enumerate(data["articles"]):
         article["index"] = i + 1
@@ -33,7 +32,7 @@ def add_numbers_to_data(data: Dict) -> Dict:
     return data
 
 
-def flatten_content_in_clauses(amendment: Dict) -> Dict:
+def flatten_content_in_clauses(amendment: dict) -> dict:
     if amendment.get("clauses"):
         amendment["content"] = " ".join(
             clause["content"][0] for clause in amendment.pop("clauses")
