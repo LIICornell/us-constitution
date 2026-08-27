@@ -1,6 +1,6 @@
 from collections.abc import Iterator
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 from roman import fromRoman, toRoman
 
 
@@ -12,7 +12,7 @@ class EssayLink(BaseModel):
     idnums: str = ""
     extid: str = ""
     govlink: str | None = None
-    children: list["EssayLink"]
+    children: list["EssayLink"] = Field(default_factory=list)
 
 
 class Provision(BaseModel):
